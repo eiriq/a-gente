@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Wow:O</title>
+    <link rel="icon" type="image/png" href="icon.png">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Kalam:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        .dancing { font-family: "Dancing Script", cursive; }
+        .kalam { font-family: "Kalam", cursive; }
+        .bebas { font-family: "Bebas Neue", sans-serif; }
+        
+        .video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+        }
+        
+        .texture-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: url("https://www.transparenttextures.com/patterns/crisp-paper-ruffles.png");
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .tape {
+            position: absolute;
+            width: 60px;
+            height: 18px;
+            background: linear-gradient(45deg, rgba(255,255,255,0.8), rgba(240,240,240,0.6));
+            transform: rotate(-45deg);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+        
+        .photo-shadow {
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3), 0 0 0 2px #fff, 0 0 0 4px rgba(0,0,0,0.1);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .photo-shadow:hover {
+            transform: scale(1.05) !important;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4), 0 0 0 3px #fff, 0 0 0 6px rgba(0,0,0,0.15);
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0); }
+            50% { transform: translateY(-8px) rotate(1deg); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 12px rgba(255,105,180,0.5); }
+            50% { box-shadow: 0 0 25px rgba(255,105,180,0.8); }
+        }
+        @keyframes rotate-slow {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .float { animation: float 5s ease-in-out infinite; }
+        .pulse-glow { animation: pulse-glow 3s ease-in-out infinite; }
+        .rotate-slow { animation: rotate-slow 25s linear infinite; }
+        
+        .vintage { filter: sepia(0.3) contrast(1.1) brightness(1.05); }
+        .dreamy { filter: brightness(1.1) saturate(1.2) hue-rotate(10deg); }
+        .dramatic { filter: contrast(1.3) brightness(0.9) grayscale(0.2); }
+        
+        .polaroid {
+            background: #fff;
+            padding: 10px 10px 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            position: relative;
+        }
+        .polaroid::after {
+            content: attr(data-caption);
+            position: absolute;
+            bottom: 6px;
+            left: 0;
+            width: 100%;
+            text-align: center;
+            font-family: "Kalam", cursive;
+            font-size: 12px;
+            color: #333;
+        }
+        
+        .particle {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.6;
+            z-index: 5;
+        }
+        
+        .glow-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at 30% 40%, rgba(255,182,193,0.3) 0%, transparent 60%),
+                        radial-gradient(circle at 70% 80%, rgba(173,216,230,0.3) 0%, transparent 60%);
+            pointer-events: none;
+            z-index: 2;
+        }
+        
+        .photo-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .modal-content {
+            position: relative;
+            max-width: 90%;
+            max-height: 80%;
+            animation: slideIn 0.5s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .modal-image {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .modal-video {
+            width: 100%;
+            max-height: 70vh;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        
+        .modal-message {
+            background: rgba(255,255,255,0.95);
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+            font-family: "Kalam", cursive;
+            font-size: 18px;
+            color: #333;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .close-btn {
+            position: absolute;
+            top: -40px;
+            right: 0;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .close-btn:hover {
+            transform: scale(1.2);
+        }
+        
+        .nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1001;
+        }
+        
+        .nav-btn:hover {
+            background: rgba(255,255,255,0.4);
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .prev-btn {
+            left: 20px;
+        }
+        
+        .next-btn {
+            right: 20px;
+        }
+        
+        .music-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+        
+        .music-popup.show {
+            opacity: 1;
+        }
+        
+        .music-popup.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        .popup-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 320px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .music-popup.show .popup-content {
+            transform: scale(1);
+        }
+        
+        .popup-message {
+            font-family: "Kalam", cursive;
+            font-size: 22px;
+            color: #333;
+            margin-bottom: 25px;
+        }
+        
+        .popup-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .popup-btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-family: "Bebas Neue", sans-serif;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+        
+        .popup-btn.yes {
+            background: #ff6b9d;
+            color: white;
+        }
+        
+        .popup-btn.yes:hover {
+            background: #ff5a8a;
+            transform: scale(1.05);
+        }
+        
+        .popup-btn.no {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .popup-btn.no:hover {
+            background: #d0d0d0;
+            transform: scale(1.05);
+        }
+        
+        .video-thumb {
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            background: rgba(255,255,255,0.8);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ff6b9d;
+            font-size: 18px;
+            z-index: 5;
+        }
+        
+        @media (max-width: 640px) {
+            .photo-container {
+                transform: scale(0.9);
+                transform-origin: top center;
+            }
+            
+            .modal-message {
+                font-size: 16px;
+                padding: 12px 16px;
+            }
+            
+            .nav-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 16px;
+            }
+            
+            .popup-content {
+                padding: 25px 20px;
+                max-width: 280px;
+            }
+            
+            .popup-message {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen overflow-x-hidden relative">
+    <video autoplay muted loop playsinline class="video-background">
+        <source src="fundo.mp4" type="video/mp4">
+        <div class="bg-gradient-to-br from-pink-100 via-purple-50 to-indigo-100 w-full h-full"></div>
+    </video>
+    
+    <audio id="backgroundMusic" loop>
+        <source src="audio.mp3" type="audio/mpeg">
+    </audio>
+    
+    <div class="texture-overlay"></div>
+    <div class="glow-overlay"></div>
+    
+    <div class="max-w-md mx-auto relative z-10 photo-container">
+        <div class="relative mb-12 mt-6 text-center">
+            <h1 class="dancing text-5xl text-pink-600 relative inline-block mb-2">
+                UUUNNNNOOSSSSAAAAA
+                <div class="tape top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-16 h-5"></div>
+            </h1>
+            <p class="bebas text-2xl text-purple-800 tracking-widest">Oi, quanto tempo:)</p>
+            <div class="mt-3 flex justify-center space-x-2">
+                <i class="fas fa-heart text-pink-500 text-xl pulse-glow"></i>
+                <i class="fas fa-infinity text-purple-500 text-xl rotate-slow"></i>
+                <i class="fas fa-heart text-pink-500 text-xl pulse-glow"></i>
+            </div>
+        </div>
+
+        <div class="relative mb-20 min-h-[300px]">
+            <div class="absolute top-0 left-0 z-30 rotate-[-6deg] float">
+                <div class="polaroid photo-shadow" data-caption="Oi Onibus">
+                    <img src="foto1.jpg" class="w-32 h-40 object-cover vintage cursor-pointer" onclick="openModal(1)">
+                </div>
+            </div>
+            
+            <div class="absolute top-16 left-24 z-40 rotate-[10deg]">
+                <img src="foto2.webp" class="photo-shadow w-24 h-32 object-cover dreamy rounded-lg cursor-pointer" onclick="openModal(2)">
+                <div class="tape top-2 left-2 w-12 h-4"></div>
+            </div>
+            
+            <div class="absolute top-0 right-8 z-20 rotate-[2deg]">
+                <img src="foto3.png" class="photo-shadow w-12 h-40 object-cover dramatic rounded cursor-pointer" onclick="openModal(3)">
+            </div>
+            
+            <div class="absolute top-24 right-20 z-25 rotate-[-12deg]">
+                <img src="foto4.webp" class="photo-shadow w-20 h-20 object-cover rounded-full cursor-pointer" onclick="openModal(4)">
+            </div>
+            
+            <div class="absolute top-20 left-12 z-35 rotate-[4deg]">
+                <img src="foto5.webp" class="photo-shadow w-28 h-36 object-cover rounded-lg cursor-pointer" onclick="openModal(5)">
+            </div>
+            
+            <div class="absolute top-6 left-12 z-50 text-3xl text-yellow-400 opacity-80">
+                <i class="fas fa-star"></i>
+            </div>
+            <div class="absolute top-24 right-32 z-50 text-2xl text-pink-500">
+                <i class="fas fa-heart"></i>
+            </div>
+        </div>
+
+        <div class="relative mb-20 min-h-[280px]">
+            <div class="absolute top-0 right-0 z-30 rotate-[-8deg]">
+                <div class="polaroid photo-shadow" data-caption="Nossa que fotogenicos">
+                    <img src="foto6.webp" class="w-36 h-44 object-cover dreamy cursor-pointer" onclick="openModal(6)">
+                </div>
+            </div>
+            
+            <div class="absolute top-12 right-28 z-40 rotate-[12deg]">
+                <img src="foto7.jpg" class="photo-shadow w-24 h-32 object-cover vintage rounded-lg cursor-pointer" onclick="openModal(7)">
+            </div>
+            
+            <div class="absolute top-6 left-12 z-25 rotate-[-4deg]">
+                <img src="foto8.jpg" class="photo-shadow w-16 h-16 object-cover rounded-full cursor-pointer" onclick="openModal(8)">
+            </div>
+            
+            <div class="absolute top-20 left-20 z-35 rotate-[6deg]">
+                <img src="foto9.webp" class="photo-shadow w-28 h-36 object-cover dramatic rounded-lg cursor-pointer" onclick="openModal(9)">
+            </div>
+            
+            <div class="absolute top-0 left-28 z-20 rotate-[-2deg]">
+                <img src="foto10.jpg" class="photo-shadow w-12 h-40 object-cover rounded cursor-pointer" onclick="openModal(10)">
+            </div>
+            
+            <div class="absolute top-16 left-1/2 z-50 text-4xl text-purple-500 opacity-70">
+                <i class="fas fa-spa"></i>
+            </div>
+            <div class="absolute top-32 right-12 z-50 text-2xl text-blue-400">
+                <i class="fas fa-bolt"></i>
+            </div>
+        </div>
+
+        <div class="relative mb-20 min-h-[300px]">
+            <div class="absolute bottom-0 left-0 z-30 rotate-[5deg] float">
+                <div class="polaroid photo-shadow" data-caption="Poxa, tchau">
+                    <img src="foto11.jpg" class="w-40 h-48 object-cover cursor-pointer" onclick="openModal(11)">
+                </div>
+            </div>
+            
+            <div class="absolute bottom-16 left-32 z-40 rotate-[-10deg]">
+                <img src="foto12.jpg" class="photo-shadow w-28 h-36 object-cover dreamy rounded-lg cursor-pointer" onclick="openModal(12)">
+            </div>
+            
+            <div class="absolute bottom-0 right-8 z-25 rotate-[-6deg]">
+                <img src="foto13.jpg" class="photo-shadow w-32 h-40 object-cover vintage rounded-lg cursor-pointer" onclick="openModal(13)">
+            </div>
+            
+            <div class="absolute bottom-20 left-20 z-35 rotate-[8deg]">
+                <img src="foto14.jpg" class="photo-shadow w-20 h-20 object-cover rounded-full cursor-pointer" onclick="openModal(14)">
+            </div>
+            
+            <div class="absolute bottom-0 right-24 z-20 rotate-[3deg]">
+                <div class="video-thumb">
+                    <video class="photo-shadow w-14 h-44 object-cover dramatic rounded" onclick="openModal(15)">
+                        <source src="video1.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute bottom-24 left-16 z-50 text-3xl text-pink-500">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="absolute bottom-8 right-40 z-50 text-2xl text-yellow-400">
+                <i class="fas fa-sun"></i>
+            </div>
+        </div>
+
+        <div class="relative mb-20 min-h-[280px]">
+            <div class="absolute top-0 right-0 z-30 rotate-[-5deg]">
+                <div class="polaroid photo-shadow" data-caption="Vc é gata viu?">
+                    <img src="foto16.jpg" class="w-36 h-44 object-cover dreamy cursor-pointer" onclick="openModal(16)">
+                </div>
+            </div>
+            
+            <div class="absolute top-10 right-32 z-40 rotate-[11deg]">
+                <img src="foto17.jpg" class="photo-shadow w-24 h-32 object-cover vintage rounded-lg cursor-pointer" onclick="openModal(17)">
+            </div>
+            
+            <div class="absolute top-6 left-16 z-25 rotate-[-8deg]">
+                <div class="video-thumb">
+                    <video class="photo-shadow w-16 h-16 object-cover rounded-full" onclick="openModal(18)">
+                        <source src="video2.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute top-20 left-20 z-35 rotate-[6deg]">
+                <div class="video-thumb">
+                    <video class="photo-shadow w-28 h-36 object-cover dramatic rounded-lg" onclick="openModal(19)">
+                        <source src="video3.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon">
+                        <i class="fas fa-play"></i>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="absolute top-0 left-28 z-20 rotate-[-3deg]">
+                <img src="foto15.png" class="photo-shadow w-12 h-40 object-cover rounded cursor-pointer" onclick="openModal(20)">
+            </div>
+            
+            <div class="absolute top-16 left-1/2 z-50 text-4xl text-red-500 opacity-80">
+                <i class="fas fa-heart"></i>
+            </div>
+            <div class="absolute top-32 right-16 z-50 text-3xl text-purple-500">
+                <i class="fas fa-gem"></i>
+            </div>
+        </div>
+
+        <div class="relative mt-16 mb-8 text-center">
+            <div class="inline-block relative">
+                <div class="tape top-0 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-6"></div>
+                <p class="kalam text-xl text-gray-800 px-6 py-2 bg-white/90 rounded-full shadow-lg">
+                    Isso foi a gente:D que venha mais
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div id="photoModal" class="photo-modal">
+        <span class="close-btn" onclick="closeModal()">&times;</span>
+        <button class="nav-btn prev-btn" onclick="changePhoto(-1)">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="nav-btn next-btn" onclick="changePhoto(1)">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="modal-content">
+            <div id="mediaContainer"></div>
+            <div id="modalMessage" class="modal-message"></div>
+        </div>
+    </div>
+
+    <div id="musicPopup" class="music-popup">
+        <div class="popup-content">
+            <div class="popup-message">Musiquinha enquanto vê?</div>
+            <div class="popup-buttons">
+                <button class="popup-btn yes" onclick="startMusic()">SIM</button>
+                <button class="popup-btn no" onclick="closeMusicPopup()">NÃO</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="particle top-10 left-10 text-pink-400 text-xl">
+        <i class="fas fa-heart"></i>
+    </div>
+    <div class="particle top-1/3 right-16 text-purple-400 text-lg">
+        <i class="fas fa-star"></i>
+    </div>
+    <div class="particle bottom-1/4 left-1/4 text-yellow-400 text-2xl">
+        <i class="fas fa-sun"></i>
+    </div>
+    <div class="particle bottom-20 right-1/3 text-blue-400 text-xl">
+        <i class="fas fa-bolt"></i>
+    </div>
+
+    <script>
+        // Textos manuais para cada mídia
+        const messages = {
+            1: "Onibus e Defensorias kkk",
+            2: "Nosso zói",
+            3: "No dia que me formei, senti saudade, e hoje sinto mais ainda, de voce.",
+            4: "Finge sanidade vai",
+            5: "Defensoria me deixa maluco",
+            6: "Crias da escola",
+            7: "Tuts tuts fofão",
+            8: "Eram momentos tão bons",
+            9: "Porque voce tava puta mesmo?",
+            10: "Voce nunca assistiu esse anime comigo, so viu o trailer",
+            11: "Tchau honorino...",
+            12: "Tchau defensoria...",
+            13: "Não 5 da manhã nao",
+            14: "Cabelo de cria",
+            15: "KKKK AUDIO DA VAGABUNDA NO ELEVADOR",
+            16: "Um dia voce vendo falou que nao acha, mas sabe, eu te acho muito bonita, com ou sem maquiagem, se valorize.",
+            17: "👍",
+            18: "Tec tec tec",
+            19: "KKKKKKKK",
+            20: "É minha foto favorita."
+        };
+        
+        // Mídias (imagens e vídeos)
+        const mediaFiles = {
+            1: { type: 'image', src: 'foto1.jpg' },
+            2: { type: 'image', src: 'foto2.webp' },
+            3: { type: 'image', src: 'foto3.png' },
+            4: { type: 'image', src: 'foto4.webp' },
+            5: { type: 'image', src: 'foto5.webp' },
+            6: { type: 'image', src: 'foto6.webp' },
+            7: { type: 'image', src: 'foto7.jpg' },
+            8: { type: 'image', src: 'foto8.jpg' },
+            9: { type: 'image', src: 'foto9.webp' },
+            10: { type: 'image', src: 'foto10.jpg' },
+            11: { type: 'image', src: 'foto11.jpg' },
+            12: { type: 'image', src: 'foto12.jpg' },
+            13: { type: 'image', src: 'foto13.jpg' },
+            14: { type: 'image', src: 'foto14.jpg' },
+            15: { type: 'video', src: 'video1.mp4' },
+            16: { type: 'image', src: 'foto16.jpg' },
+            17: { type: 'image', src: 'foto17.jpg' },
+            18: { type: 'video', src: 'video2.mp4' },
+            19: { type: 'video', src: 'video3.mp4' },
+            20: { type: 'image', src: 'foto15.png' }
+        };
+        
+        let currentPhoto = 1;
+        
+        function openModal(photoNumber) {
+            currentPhoto = photoNumber;
+            const modal = document.getElementById('photoModal');
+            const modalMessage = document.getElementById('modalMessage');
+            const mediaContainer = document.getElementById('mediaContainer');
+            const media = mediaFiles[photoNumber];
+            
+            // Limpa o container
+            mediaContainer.innerHTML = '';
+            
+            if (media.type === 'image') {
+                const img = document.createElement('img');
+                img.src = media.src;
+                img.className = 'modal-image';
+                img.alt = 'Imagem';
+                mediaContainer.appendChild(img);
+            } else if (media.type === 'video') {
+                const video = document.createElement('video');
+                video.src = media.src;
+                video.className = 'modal-video';
+                video.controls = true;
+                video.autoplay = false;
+                video.muted = false;
+                mediaContainer.appendChild(video);
+            }
+            
+            modalMessage.textContent = messages[photoNumber];
+            
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
+            
+            // Pausa todos os vídeos ao fechar o modal
+            const videos = document.querySelectorAll('video');
+            videos.forEach(video => {
+                video.pause();
+            });
+        }
+        
+        function changePhoto(direction) {
+            // Pausa o vídeo atual se houver
+            const currentMedia = document.querySelector('#mediaContainer video');
+            if (currentMedia) {
+                currentMedia.pause();
+            }
+            
+            currentPhoto += direction;
+            
+            if (currentPhoto < 1) currentPhoto = 20;
+            if (currentPhoto > 20) currentPhoto = 1;
+            
+            openModal(currentPhoto);
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('photoModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+        
+        function startMusic() {
+            const audio = document.getElementById('backgroundMusic');
+            audio.volume = 0.3;
+            audio.play();
+            closeMusicPopup();
+        }
+        
+        function closeMusicPopup() {
+            const popup = document.getElementById('musicPopup');
+            popup.classList.remove('show');
+            popup.classList.add('hide');
+            
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 500);
+        }
+        
+        window.addEventListener('load', function() {
+            const popup = document.getElementById('musicPopup');
+            popup.style.display = 'flex';
+            
+            setTimeout(() => {
+                popup.classList.add('show');
+            }, 100);
+        });
+        
+        document.querySelectorAll('.photo-shadow').forEach(photo => {
+            photo.addEventListener('mouseenter', function() {
+                this.style.filter = 'brightness(1.1) saturate(1.2)';
+            });
+            photo.addEventListener('mouseleave', function() {
+                this.style.filter = '';
+            });
+        });
+        
+        document.querySelectorAll('.particle').forEach(particle => {
+            const randomX = Math.random() * 50;
+            const randomY = Math.random() * 50;
+            particle.style.transform = `translate(${randomX}px, ${randomY}px)`;
+        });
+        
+        const video = document.querySelector('.video-background');
+        video.addEventListener('loadeddata', function() {
+            video.play();
+        });
+        
+        //Te amo
+    </script>
+</body>
+</html>
